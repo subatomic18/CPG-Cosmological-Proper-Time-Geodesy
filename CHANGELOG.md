@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.3.1 — 2026-09-20
+
+- Created the Zenodo-enabled archival release of CPG.
+- Assigned permanent DOI: `10.5281/zenodo.22863852`.
+- Updated repository citation metadata and documentation to reference the archived release.
+- No scientific or numerical behavior changed relative to v0.3.0.
+
 ## v0.3.0 — 2026-09-20
 
 - Added high-redshift standardized-transient closure analysis.
