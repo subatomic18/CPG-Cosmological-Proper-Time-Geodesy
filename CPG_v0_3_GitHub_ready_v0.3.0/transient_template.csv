@@ -1,5 +1,0 @@
-event_id,z,t_obs,t_rest,sigma_t_obs,sigma_t_rest,environment,quality
-EXAMPLE-0001,0.50,30.0,20.0,1.5,0.5,field,1
-EXAMPLE-0002,1.00,40.0,20.0,2.0,0.5,field,1
-EXAMPLE-0003,2.60,72.0,20.0,4.0,0.5,dense,1
-EXAMPLE-0004,3.20,84.0,20.0,5.0,0.5,dense,1
