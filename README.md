@@ -1,8 +1,11 @@
-# Cosmological Proper-Time Geodesy (CPG) v0.3
+# Cosmological Proper-Time Geodesy (CPG) v0.3.1
 
 **Author:** Jeffery Barnes  
 **Affiliation:** Independent Researcher  
 **Code license:** MIT  
+**Archived release DOI:** [10.5281/zenodo.22863852](https://doi.org/10.5281/zenodo.22863852)
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22863852.svg)](https://doi.org/10.5281/zenodo.22863852)
 
 CPG is a numerical framework for testing **cosmological chronometric closure**. Version 0.3 extends the original dual-pathway proper-time engine with a high-redshift transient analysis layer designed for future standardized transient data, including Type Ia supernova samples extending into the poorly tested high-redshift regime.
 
@@ -127,7 +130,11 @@ and test that chain against independent cosmological probes.
 
 ## Citation
 
-Citation metadata are provided in [`CITATION.cff`](CITATION.cff). Versioned releases are intended to be archived with Zenodo so that each public release receives a persistent DOI.
+The archived v0.3.1 release is permanently available from Zenodo:
+
+**Barnes, Jeffery. (2026). _Cosmological Proper-Time Geodesy (CPG) (v0.3.1)._ Zenodo. https://doi.org/10.5281/zenodo.22863852**
+
+Machine-readable citation metadata are provided in [`CITATION.cff`](CITATION.cff).
 
 ## License
 
