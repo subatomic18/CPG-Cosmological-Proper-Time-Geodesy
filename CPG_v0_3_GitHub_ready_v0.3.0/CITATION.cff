@@ -1,0 +1,20 @@
+cff-version: 1.2.0
+title: "Cosmological Proper-Time Geodesy (CPG)"
+message: "If you use this software, please cite the versioned release."
+type: software
+authors:
+  - family-names: "Barnes"
+    given-names: "Jeffery"
+repository-code: "https://github.com/subatomic18/CPG-Cosmological-Proper-Time-Geodesy"
+url: "https://github.com/subatomic18/CPG-Cosmological-Proper-Time-Geodesy"
+version: "0.3.0"
+date-released: "2026-09-20"
+license: MIT
+keywords:
+  - cosmology
+  - general relativity
+  - proper time
+  - cosmic chronometers
+  - supernova time dilation
+  - high-redshift transients
+  - chronometric closure
