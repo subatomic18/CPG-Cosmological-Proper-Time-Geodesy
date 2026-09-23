@@ -1,0 +1,33 @@
+z,H_km_s_Mpc,sigma_H,reference,covariance_group
+0.07,69,19.6,Zhang et al. (2014),independent
+0.09,69,12,Jimenez et al. (2003),independent
+0.12,68.6,26.2,Zhang et al. (2014),independent
+0.17,83,8,Simon Verde & Jimenez (2005),independent
+0.1791,74.91,3.806926,Moresco et al. (2012),moresco_bc03
+0.1993,74.96,4.900135,Moresco et al. (2012),moresco_bc03
+0.2,72.9,29.6,Zhang et al. (2014),independent
+0.27,77,14,Simon et al. (2005),independent
+0.28,88.8,36.6,Zhang et al. (2014),independent
+0.3519,82.78,13.94843,Moresco et al. (2012),moresco_bc03
+0.3802,83,13.54,Moresco et al. (2016),moresco_bc03
+0.4,95,17,Simon et al. (2005),independent
+0.4004,76.97,10.18,Moresco et al. (2016),moresco_bc03
+0.4247,87.08,11.24,Moresco et al. (2016),moresco_bc03
+0.4497,92.78,12.9,Moresco et al. (2016),moresco_bc03
+0.47,89,49.6,Ratsimbazafy et al. (2017),independent
+0.4783,80.91,9.044,Moresco et al. (2016),moresco_bc03
+0.48,97,62,Stern et al. (2010),independent
+0.5929,103.8,12.49752,Moresco et al. (2012),moresco_bc03
+0.6797,91.6,7.961872,Moresco et al. (2012),moresco_bc03
+0.75,98.8,33.6,Borghi Moresco & Cimatti (2022),independent
+0.7812,104.5,12.19515,Moresco et al. (2012),moresco_bc03
+0.8754,125.1,16.70085,Moresco et al. (2012),moresco_bc03
+0.88,90,40,Stern et al. (2010),independent
+0.9,117,23,Simon et al. (2005),independent
+1.037,153.7,19.6736,Moresco et al. (2012),moresco_bc03
+1.3,168,17,Simon et al. (2005),independent
+1.363,160,32.63,Moresco (2015),moresco_bc03
+1.43,177,18,Simon et al. (2005),independent
+1.53,140,14,Simon et al. (2005),independent
+1.75,202,40,Simon et al. (2005),independent
+1.965,186.5,49.58,Moresco (2015),moresco_bc03
