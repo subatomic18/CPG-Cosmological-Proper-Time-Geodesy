@@ -1,0 +1,49 @@
+name: Redshift mapping stress test
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/redshift-mapping-stress.yml'
+      - 'cpg_redshift_mapping.py'
+      - 'test_cpg_redshift_mapping.py'
+
+jobs:
+  stress-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out CPG
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: python -m pip install --upgrade pip numpy pytest
+
+      - name: Run unit tests
+        run: pytest -q test_cpg_redshift_mapping.py
+
+      - name: Run H0 reconciliation stress test
+        run: |
+          python cpg_redshift_mapping.py \
+            --h0-late 73.04342157543183 \
+            --h0-early 67.26899612716719 \
+            --z-star 1089.938 | tee redshift_mapping_stress.txt
+          python cpg_redshift_mapping.py \
+            --h0-late 73.04342157543183 \
+            --h0-early 67.26899612716719 \
+            --z-star 1089.938 \
+            --json > redshift_mapping_stress.json
+
+      - name: Upload stress-test outputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: redshift-mapping-stress
+          path: |
+            redshift_mapping_stress.txt
+            redshift_mapping_stress.json
