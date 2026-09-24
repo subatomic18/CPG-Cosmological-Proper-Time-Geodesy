@@ -1,0 +1,66 @@
+name: SH0ES distance-ladder reproduction
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/shoes-reproduction.yml'
+      - 'cpg_distance_ladder.py'
+      - 'test_cpg_distance_ladder.py'
+
+jobs:
+  reproduce:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out CPG
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: python -m pip install --upgrade pip numpy scipy pytest
+
+      - name: Run local unit tests
+        run: pytest -q test_cpg_distance_ladder.py
+
+      - name: Download public SH0ES-2022 matrix data
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p data/shoes2022
+          base='https://raw.githubusercontent.com/marcushogas/Cepheid-Distance-Ladder-Data/main/SH0ES2022'
+          curl --fail --location --retry 3 "$base/y_R22.txt" -o data/shoes2022/y_R22.txt
+          curl --fail --location --retry 3 "$base/L_R22.txt" -o data/shoes2022/L_R22.txt
+          curl --fail --location --retry 3 "$base/q_R22.txt" -o data/shoes2022/q_R22.txt
+          curl --fail --location --retry 3 "$base/C_R22.txt" -o data/shoes2022/C_R22.txt
+          ls -lh data/shoes2022
+
+      - name: Reproduce SH0ES baseline
+        run: |
+          python cpg_distance_ladder.py data/shoes2022 --show-parameters | tee shoes_reproduction.txt
+          python cpg_distance_ladder.py data/shoes2022 --json > shoes_reproduction.json
+
+      - name: Enforce published baseline reproduction
+        run: |
+          python - <<'PY'
+          import json
+          with open('shoes_reproduction.json', 'r', encoding='utf-8') as f:
+              result = json.load(f)
+          check = result['published_baseline_check']
+          print(json.dumps(check, indent=2))
+          if not check['within_tolerance']:
+              raise SystemExit('CPG did not reproduce the published SH0ES baseline within tolerance')
+          PY
+
+      - name: Upload reproduction outputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: shoes-distance-ladder-reproduction
+          path: |
+            shoes_reproduction.txt
+            shoes_reproduction.json
