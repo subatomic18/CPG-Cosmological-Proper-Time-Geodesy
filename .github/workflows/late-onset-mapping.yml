@@ -1,0 +1,51 @@
+name: Late-onset redshift mapping closure
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/late-onset-mapping.yml'
+      - 'cpg_late_onset_mapping.py'
+      - 'test_cpg_late_onset_mapping.py'
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out CPG
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: python -m pip install --upgrade pip numpy scipy pytest
+
+      - name: Run unit tests
+        run: pytest -q test_cpg_late_onset_mapping.py
+
+      - name: Run late-onset closure scan
+        run: |
+          python cpg_late_onset_mapping.py \
+            --h0-late 73.04342157543183 \
+            --h0-early 67.26899612716719 \
+            --max-hubble-error 0.01 \
+            --z-star 1089.938 | tee late_onset_mapping.txt
+          python cpg_late_onset_mapping.py \
+            --h0-late 73.04342157543183 \
+            --h0-early 67.26899612716719 \
+            --max-hubble-error 0.01 \
+            --z-star 1089.938 \
+            --json > late_onset_mapping.json
+
+      - name: Upload outputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: late-onset-redshift-mapping
+          path: |
+            late_onset_mapping.txt
+            late_onset_mapping.json
