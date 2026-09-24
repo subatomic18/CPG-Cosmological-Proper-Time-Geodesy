@@ -1,0 +1,55 @@
+name: Planck compressed CMB closure
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/planck-cmb-closure.yml'
+      - 'cpg_cmb_closure.py'
+      - 'test_cpg_cmb_closure.py'
+      - 'data/planck2018_cmb_compressed.json'
+
+jobs:
+  reproduce:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out CPG
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: python -m pip install --upgrade pip numpy scipy pytest camb
+
+      - name: Run unit tests
+        run: pytest -q test_cpg_cmb_closure.py
+
+      - name: Reproduce compressed Planck acoustic scale
+        run: |
+          python cpg_cmb_closure.py data/planck2018_cmb_compressed.json | tee planck_cmb_closure.txt
+          python cpg_cmb_closure.py data/planck2018_cmb_compressed.json --json > planck_cmb_closure.json
+
+      - name: Enforce central-value reproduction
+        run: |
+          python - <<'PY'
+          import json
+          with open('planck_cmb_closure.json', 'r', encoding='utf-8') as f:
+              result = json.load(f)
+          check = result['published_central_value_check']
+          print(json.dumps(check, indent=2))
+          if not check['within_tolerance']:
+              raise SystemExit('CPG did not reproduce the compressed Planck H0 central value within tolerance')
+          PY
+
+      - name: Upload closure outputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: planck-compressed-cmb-closure
+          path: |
+            planck_cmb_closure.txt
+            planck_cmb_closure.json
