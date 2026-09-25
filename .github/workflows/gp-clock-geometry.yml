@@ -1,0 +1,49 @@
+name: GP clock-geometry closure
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/gp-clock-geometry.yml'
+      - 'cpg_gp.py'
+      - 'cpg_clock_geometry_gp.py'
+      - 'test_cpg_gp.py'
+      - 'test_cpg_clock_geometry_gp.py'
+      - 'data/desi_dr2_radial_bao.csv'
+      - 'data/desi_dr2_radial_bao_cov.csv'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out CPG
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: python -m pip install --upgrade pip numpy scipy pytest
+
+      - name: Run GP regression tests
+        run: pytest -q test_cpg_gp.py test_cpg_clock_geometry_gp.py
+
+      - name: Run public-data GP closure
+        run: |
+          python cpg_clock_geometry_gp.py \
+            --cc data/cosmic_chronometers_32.csv \
+            --bao data/desi_dr2_radial_bao.csv \
+            --cc-systematics data/moresco_mm20_systematics.csv \
+            --bao-covariance data/desi_dr2_radial_bao_cov.csv \
+            --method gp \
+            --draws 4000 > gp_clock_geometry.json
+
+      - name: Upload output
+        uses: actions/upload-artifact@v4
+        with:
+          name: gp-clock-geometry
+          path: gp_clock_geometry.json
