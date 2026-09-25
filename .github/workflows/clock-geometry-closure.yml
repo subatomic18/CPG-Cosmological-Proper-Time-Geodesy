@@ -1,0 +1,43 @@
+name: Clock-geometry closure
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/clock-geometry-closure.yml'
+      - 'cpg_clock_geometry_closure.py'
+      - 'test_cpg_clock_geometry_closure.py'
+      - 'cpg_chronometers.py'
+      - 'requirements.txt'
+  pull_request:
+    paths:
+      - '.github/workflows/clock-geometry-closure.yml'
+      - 'cpg_clock_geometry_closure.py'
+      - 'test_cpg_clock_geometry_closure.py'
+      - 'cpg_chronometers.py'
+      - 'requirements.txt'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out CPG
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt pytest
+
+      - name: Run clock-geometry regression tests
+        run: pytest -q test_cpg_clock_geometry_closure.py
+
+      - name: Compile diagnostic
+        run: python -m py_compile cpg_clock_geometry_closure.py
