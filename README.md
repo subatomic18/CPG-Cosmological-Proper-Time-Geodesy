@@ -60,6 +60,61 @@ Version 0.3 includes:
 - synthetic signal injection and recovery
 - automated numerical validation tests
 
+## Clock-geometry closure diagnostic
+
+The development branch also includes a covariance-aware comparison between
+radial BAO geometry and cosmic-chronometer clocks. Radial BAO measures
+`D_H/r_d`, while cosmic chronometers reconstruct `H_CC(z)`. CPG combines them
+into the sound-horizon-degenerate observable
+
+```text
+Q(z) = Gamma(z) r_d = c / { [D_H(z)/r_d] H_CC(z) }.
+```
+
+A constant `Q(z)` is the null test for no detected redshift dependence in
+`Gamma(z)`. Because the primary statistic is `Gamma r_d`, the shape test does
+not require an assumed sound horizon. An external `r_d` can optionally be
+supplied to convert `Q(z)` into an absolute `Gamma(z)` reconstruction.
+
+The implementation in `cpg_clock_geometry_closure.py`:
+
+- propagates a full cosmic-chronometer covariance matrix when supplied,
+- propagates a full radial-BAO covariance matrix when supplied,
+- reconstructs `H_CC` at BAO redshifts with Monte-Carlo PCHIP interpolation,
+- refuses to extrapolate beyond the measured chronometer redshift range,
+- returns `Q(z)`, `Q(z)/Q0`, the reconstructed covariance of `Q`,
+- fits a generalized-least-squares constant `Q0`, and
+- reports `chi2`, degrees of freedom, and the constant-closure p-value.
+
+Example:
+
+```bash
+python3 cpg_clock_geometry_closure.py \
+  --cc data/cosmic_chronometers_32.csv \
+  --bao path/to/radial_bao.csv \
+  --cc-systematics data/moresco_mm20_systematics.csv \
+  --draws 8000
+```
+
+Optional absolute sound-horizon calibration:
+
+```bash
+python3 cpg_clock_geometry_closure.py \
+  --cc data/cosmic_chronometers_32.csv \
+  --bao path/to/radial_bao.csv \
+  --rd 147.09 \
+  --rd-sigma 0.26
+```
+
+Radial BAO CSV files require:
+
+```text
+z,DH_over_rd,sigma_DH_over_rd
+```
+
+with an optional `reference` column. A full numeric BAO covariance matrix can
+be supplied separately with `--bao-covariance`.
+
 ## Requirements
 
 - Python 3.10+
@@ -82,6 +137,12 @@ Or run the automated test script:
 
 ```bash
 python3 test_cpg_v0_3.py
+```
+
+The clock-geometry diagnostic has its own regression tests:
+
+```bash
+python3 test_cpg_clock_geometry_closure.py
 ```
 
 ## Catalogue format
@@ -118,7 +179,7 @@ python3 cpg_v0_3.py --catalog transient_template.csv --fix-intercept
 
 ## Scientific interpretation
 
-CPG is an observational and numerical diagnostic framework. A nonzero `R_SN`, chronometer residual, or other closure statistic is **not automatically evidence for RTD-EU**. A physical interpretation requires a self-consistent spacetime model, worldlines/congruences, invariant boundary conditions, a light-cone/redshift mapping, and control of observational systematics.
+CPG is an observational and numerical diagnostic framework. A nonzero `R_SN`, chronometer residual, clock-geometry residual, or other closure statistic is **not automatically evidence for RTD-EU**. A physical interpretation requires a self-consistent spacetime model, worldlines/congruences, invariant boundary conditions, a light-cone/redshift mapping, and control of observational systematics.
 
 The long-term RTD-EU/CPG program is to connect
 
