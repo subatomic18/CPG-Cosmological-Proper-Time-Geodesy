@@ -1,0 +1,52 @@
+name: Public NRPantheon effective-H0 benchmark
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - lightcone-null-geodesics
+    paths:
+      - '.github/workflows/nrpantheon-benchmark.yml'
+      - 'cpg_nrpantheon_benchmark.py'
+      - 'test_cpg_nrpantheon_benchmark.py'
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out CPG
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: python -m pip install --upgrade pip numpy pytest
+
+      - name: Run benchmark regression tests
+        run: pytest -q test_cpg_nrpantheon_benchmark.py
+
+      - name: Download public fiducial NRPantheon archive
+        run: |
+          set -euo pipefail
+          curl --fail --location --retry 3 \
+            https://raw.githubusercontent.com/hayleyjm/NRPantheon/main/N256_L1024/NRPantheon_nobs25_nrot5_N256_L1024.tar.gz \
+            -o /tmp/nrpantheon.tar.gz
+          mkdir -p /tmp/nrpantheon
+          tar -xzf /tmp/nrpantheon.tar.gz -C /tmp/nrpantheon
+
+      - name: Run CPG NRPantheon benchmark
+        run: |
+          python cpg_nrpantheon_benchmark.py '/tmp/nrpantheon/NRPantheon_*.dat' | tee nrpantheon_benchmark.txt
+          python cpg_nrpantheon_benchmark.py '/tmp/nrpantheon/NRPantheon_*.dat' --json > nrpantheon_benchmark.json
+
+      - name: Upload benchmark outputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: nrpantheon-effective-h0-benchmark
+          path: |
+            nrpantheon_benchmark.txt
+            nrpantheon_benchmark.json
