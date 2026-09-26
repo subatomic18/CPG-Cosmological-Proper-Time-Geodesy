@@ -8,7 +8,9 @@ on:
     paths:
       - '.github/workflows/lightcone-null-geodesics.yml'
       - 'cpg_lightcone.py'
+      - 'cpg_lightcone_shooting.py'
       - 'test_cpg_lightcone.py'
+      - 'test_cpg_lightcone_shooting.py'
       - 'cpg_mescaline_adapter.py'
 
 jobs:
@@ -28,5 +30,5 @@ jobs:
       - name: Install dependencies
         run: python -m pip install --upgrade pip numpy scipy h5py pytest
 
-      - name: Run null-geodesic regression tests
-        run: pytest -q test_cpg_lightcone.py
+      - name: Run null-geodesic and observer-shooting regression tests
+        run: pytest -q test_cpg_lightcone.py test_cpg_lightcone_shooting.py
