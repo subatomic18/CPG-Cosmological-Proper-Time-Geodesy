@@ -9,6 +9,7 @@ on:
       - '.github/workflows/lightcone-null-geodesics.yml'
       - 'cpg_lightcone.py'
       - 'cpg_lightcone_shooting.py'
+      - 'cpg_lightcone_closure_demo.py'
       - 'test_cpg_lightcone.py'
       - 'test_cpg_lightcone_shooting.py'
       - 'cpg_mescaline_adapter.py'
@@ -32,3 +33,27 @@ jobs:
 
       - name: Run null-geodesic and observer-shooting regression tests
         run: pytest -q test_cpg_lightcone.py test_cpg_lightcone_shooting.py
+
+      - name: Run end-to-end clock/light-cone closure demo
+        run: |
+          python cpg_lightcone_closure_demo.py --json > lightcone_closure_demo.json
+          python - <<'PY'
+          import json
+          with open('lightcone_closure_demo.json', 'r', encoding='utf-8') as f:
+              r = json.load(f)
+          print(json.dumps(r, indent=2))
+          if abs(r['closure_ratio'] - 1.0) > 1e-8:
+              raise SystemExit('clock/light-cone closure ratio failed tolerance')
+          if abs(r['redshift_error']) > 1e-8:
+              raise SystemExit('numerical redshift failed analytic benchmark tolerance')
+          if r['spatial_miss_distance'] > 1e-8:
+              raise SystemExit('observer shooting miss distance failed tolerance')
+          if r['max_abs_null_residual'] > 1e-7:
+              raise SystemExit('null-condition residual failed tolerance')
+          PY
+
+      - name: Upload closure output
+        uses: actions/upload-artifact@v4
+        with:
+          name: lightcone-clock-closure-demo
+          path: lightcone_closure_demo.json
