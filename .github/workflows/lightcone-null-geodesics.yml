@@ -1,0 +1,32 @@
+name: Experimental null-geodesic light-cone bridge
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - lightcone-null-geodesics
+    paths:
+      - '.github/workflows/lightcone-null-geodesics.yml'
+      - 'cpg_lightcone.py'
+      - 'test_cpg_lightcone.py'
+      - 'cpg_mescaline_adapter.py'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out CPG
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: python -m pip install --upgrade pip numpy scipy h5py pytest
+
+      - name: Run null-geodesic regression tests
+        run: pytest -q test_cpg_lightcone.py
