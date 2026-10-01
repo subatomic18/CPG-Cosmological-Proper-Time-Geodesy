@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+
+# Generated benchmark outputs
+*_closure.json
+*_closure.txt
+*_mapping.json
+*_mapping.txt
+*_reproduction.json
+*_reproduction.txt
+gp_clock_geometry.json
+
+# Local downloaded benchmark data
+data/shoes2022/

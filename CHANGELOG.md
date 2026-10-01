@@ -2,13 +2,29 @@
 
 ## Unreleased
 
-- Added a covariance-aware clock-geometry closure diagnostic.
-- Added the sound-horizon-degenerate observable `Q(z) = Gamma(z) r_d` from radial BAO and cosmic chronometers.
-- Added Monte-Carlo propagation of cosmic-chronometer and BAO covariance.
-- Added PCHIP reconstruction of `H_CC(z)` at BAO redshifts without extrapolation.
-- Added generalized-least-squares constant-`Q` closure testing with `chi2`, degrees of freedom, and p-value.
-- Added normalized shape output `Q(z)/Q0` and optional conversion to absolute `Gamma(z)` when an external `r_d` is supplied.
-- Added synthetic regression tests for constant-`Q` recovery, optional `r_d` conversion, covariance handling, and extrapolation rejection.
+### Scientific and numerical development after v0.3.1
+
+- Added Hubble chronometric-closure diagnostics.
+- Added a weak-field two-congruence chronometric diagnostic and regression tests.
+- Added ADM worldline proper-time integration, Mescaline/HDF5 adaptation, and a numerical-relativity experiment runner.
+- Added SH0ES distance-ladder reproduction tooling and an automated public-data benchmark.
+- Added a compressed Planck CMB acoustic-scale closure module and automated central-value reproduction benchmark.
+- Added constant, late-onset, and compensated redshift-mapping closure/stress tests.
+- Added a covariance-aware clock-geometry closure diagnostic using radial BAO and cosmic chronometers.
+- Added the sound-horizon-degenerate observable `Q(z) = Gamma(z) r_d` with full covariance propagation, normalized shape output, optional `r_d` calibration, and generalized-least-squares constant-closure testing.
+- Added a covariance-aware Matern-3/2 Gaussian-process reconstruction while retaining PCHIP as a robustness option.
+- Added versioned DESI DR2 radial-BAO inputs and covariance used by the public-data clock-geometry benchmark.
+- Added CPG Prediction Register v1.0, frozen on 2026-09-28, with explicit null tests, prospective-data rules, failure conditions, and the weak-field environmental benchmark scale.
+
+### Repository consolidation
+
+- Moved regression tests into `tests/` without changing their scientific content.
+- Moved the transient input template into `examples/` and technical GP notes into `docs/`.
+- Consolidated seven narrowly scoped GitHub Actions files into two workflows: `Core validation` and `Scientific benchmarks`.
+- Added `requirements-dev.txt`, `pytest.ini`, `.gitignore`, contributor guidance, a documentation index, and a release checklist.
+- Updated the README to distinguish the archived v0.3.1 DOI from post-release development on `main`.
+- Kept the `cpg_*.py` research modules at repository root to preserve existing imports and command-line interfaces during the current development line.
+- No scientific result or numerical algorithm was changed by the repository-structure cleanup itself.
 
 ## v0.3.1 — 2026-09-20
 

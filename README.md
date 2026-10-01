@@ -1,201 +1,167 @@
-# Cosmological Proper-Time Geodesy (CPG) v0.3.1
+# Cosmological Proper-Time Geodesy (CPG)
 
 **Author:** Jeffery Barnes  
 **Affiliation:** Independent Researcher  
 **Code license:** MIT  
+**Archived release:** v0.3.1  
 **Archived release DOI:** [10.5281/zenodo.22863852](https://doi.org/10.5281/zenodo.22863852)
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22863852.svg)](https://doi.org/10.5281/zenodo.22863852)
+[![Core validation](https://github.com/subatomic18/CPG-Cosmological-Proper-Time-Geodesy/actions/workflows/ci.yml/badge.svg)](https://github.com/subatomic18/CPG-Cosmological-Proper-Time-Geodesy/actions/workflows/ci.yml)
+[![Scientific benchmarks](https://github.com/subatomic18/CPG-Cosmological-Proper-Time-Geodesy/actions/workflows/benchmarks.yml/badge.svg)](https://github.com/subatomic18/CPG-Cosmological-Proper-Time-Geodesy/actions/workflows/benchmarks.yml)
 
-CPG is a numerical framework for testing **cosmological chronometric closure**. Version 0.3 extends the original dual-pathway proper-time engine with a high-redshift transient analysis layer designed for future standardized transient data, including Type Ia supernova samples extending into the poorly tested high-redshift regime.
+> **Repository status:** `main` contains development work completed after the archived v0.3.1 release. The DOI above identifies the frozen v0.3.1 archive, not every later commit on `main`.
 
-## Scope
+CPG is a numerical research framework for testing **cosmological chronometric closure**: whether independently specified cosmological clocks, worldlines, geometry probes, and reference baselines close consistently within a stated spacetime model.
 
-CPG tests whether cosmological clock observables close consistently with a specified reference cosmology. It does **not** derive a physical RTD-EU clock field or lapse directly from Einstein's equations. Any measured temporal residual must therefore be distinguished from source evolution, calibration, selection effects, progenitor physics, and other astrophysical systematics before it is interpreted physically.
+## Scientific scope
 
-## Core numerical engine
+CPG is a diagnostic framework, not by itself a physical derivation of an RTD-EU clock field. A nonzero temporal, chronometer, supernova, BAO, distance-ladder, or other closure residual is **not automatically evidence for RTD-EU or new physics**. Source evolution, calibration, selection effects, peculiar velocities, endpoint definitions, covariance, and other conventional systematics must be evaluated first.
 
-The proper-time traverse is evaluated in two independent numerical formulations:
-
-1. adaptive Gauss-Kronrod quadrature in redshift, and
-2. Radau integration after transforming to `ln(a)`.
-
-The two results are compared as an internal numerical closure test.
-
-For a user-supplied chronometric function `Gamma(z)`, the reference integral is
+The long-term program is to connect
 
 ```text
-Delta tau = integral Gamma(z) / [(1+z) H(z)] dz
+matter dynamics -> metric + worldlines -> chronometric mapping -> proper time -> observables
 ```
 
-The default fiducial background enforces density closure so that `E(0)=1`.
+and test that chain against independent cosmological probes.
 
-## High-redshift transient module
+## Current capabilities
 
-For standardized transient timescales, CPG fits
+The repository currently includes:
 
-```text
-ln(T_obs/T_rest) = alpha + b ln(1+z)
-```
+- dual-pathway numerical proper-time integration and internal numerical closure checks;
+- high-redshift standardized-transient time-dilation analysis;
+- cosmic-chronometer diagnostics;
+- covariance-aware radial-BAO / chronometer clock-geometry closure;
+- Gaussian-process and PCHIP reconstructions of the clock-geometry statistic;
+- compressed Planck acoustic-scale reproduction;
+- SH0ES distance-ladder reproduction tooling;
+- redshift-mapping, late-onset, and compensated-mapping stress tests;
+- weak-field two-congruence and ADM worldline proper-time tools;
+- Mescaline/HDF5 and numerical-relativity experiment adapters; and
+- a frozen prospective prediction and falsification register.
 
-where standard cosmological redshift stretching corresponds to `b = 1`. The nuisance parameter `alpha` may be fitted to absorb a global calibration offset or fixed to zero when source-frame standardization is independently calibrated.
+## Clock-geometry closure
 
-The transient closure statistic is
-
-```text
-R_SN(z) = exp(alpha) (1+z)^(b-1) - 1
-```
-
-Version 0.3 includes:
-
-- CSV catalogue ingestion
-- generalized least-squares fitting
-- configurable high-redshift threshold, default `z >= 2.5`
-- redshift-binned fits
-- environment-stratified fits
-- systematic-error floors
-- optional covariance matrices
-- smooth redshift-drift testing
-- standard-null closure tests
-- synthetic signal injection and recovery
-- automated numerical validation tests
-
-## Clock-geometry closure diagnostic
-
-The development branch also includes a covariance-aware comparison between
-radial BAO geometry and cosmic-chronometer clocks. Radial BAO measures
-`D_H/r_d`, while cosmic chronometers reconstruct `H_CC(z)`. CPG combines them
-into the sound-horizon-degenerate observable
+Radial BAO measures `D_H/r_d`, while cosmic chronometers reconstruct `H_CC(z)`. CPG combines them into the sound-horizon-degenerate observable
 
 ```text
 Q(z) = Gamma(z) r_d = c / { [D_H(z)/r_d] H_CC(z) }.
 ```
 
-A constant `Q(z)` is the null test for no detected redshift dependence in
-`Gamma(z)`. Because the primary statistic is `Gamma r_d`, the shape test does
-not require an assumed sound horizon. An external `r_d` can optionally be
-supplied to convert `Q(z)` into an absolute `Gamma(z)` reconstruction.
+A constant `Q(z)` is the null test for no detected redshift dependence in `Gamma(z)`. The shape test therefore does not require an assumed sound horizon. An external `r_d` may optionally be supplied to convert `Q(z)` into an absolute `Gamma(z)` reconstruction.
 
-The implementation in `cpg_clock_geometry_closure.py`:
+The covariance-aware implementation propagates chronometer and radial-BAO covariance, refuses extrapolation beyond the measured chronometer range, returns `Q(z)` and `Q(z)/Q0`, and performs generalized-least-squares constant-closure testing.
 
-- propagates a full cosmic-chronometer covariance matrix when supplied,
-- propagates a full radial-BAO covariance matrix when supplied,
-- reconstructs `H_CC` at BAO redshifts with Monte-Carlo PCHIP interpolation,
-- refuses to extrapolate beyond the measured chronometer redshift range,
-- returns `Q(z)`, `Q(z)/Q0`, the reconstructed covariance of `Q`,
-- fits a generalized-least-squares constant `Q0`, and
-- reports `chi2`, degrees of freedom, and the constant-closure p-value.
+The GP-first reconstruction is documented in [`docs/CLOCK_GEOMETRY_GP.md`](docs/CLOCK_GEOMETRY_GP.md).
 
-Example:
+## Prediction register
+
+The prospective baseline is frozen in [`predictions/CPG_Prediction_Register_v1.0.md`](predictions/CPG_Prediction_Register_v1.0.md). It records the weak-field environmental benchmark, explicit null and failure conditions, cross-probe consistency requirements, and the rule that future data must be evaluated against the frozen prediction before any refit is presented as a prediction.
+
+## Repository layout
+
+```text
+CPG/
+├── cpg_*.py                 # research modules and command-line tools
+├── tests/                   # regression tests
+├── data/                    # versioned public/derived input tables
+├── examples/                # small input-format examples
+├── predictions/             # frozen prospective prediction registers
+├── docs/                    # technical and release documentation
+├── .github/workflows/       # core validation + scientific benchmarks
+├── requirements.txt         # runtime dependencies
+├── requirements-dev.txt     # test/development dependencies
+├── CITATION.cff
+├── CHANGELOG.md
+└── LICENSE
+```
+
+The `cpg_*.py` modules intentionally remain at repository root during the post-v0.3.1 development line so existing CLI commands and imports remain stable. A future package-layout migration should be handled as a separate versioned change.
+
+## Installation
+
+Python 3.10+ is recommended.
 
 ```bash
-python3 cpg_clock_geometry_closure.py \
+python -m pip install -r requirements.txt
+```
+
+For development and tests:
+
+```bash
+python -m pip install -r requirements-dev.txt
+```
+
+CAMB is an optional benchmark dependency and is installed only when running the compressed-CMB reproduction.
+
+## Validation
+
+Run the complete regression suite from repository root:
+
+```bash
+python -m pytest -q
+```
+
+Compile all research modules:
+
+```bash
+python -m py_compile cpg_*.py
+```
+
+The original v0.3 numerical engine also retains its built-in self-test:
+
+```bash
+python cpg_v0_3.py --self-test
+```
+
+## Example analyses
+
+Clock-geometry closure using the versioned chronometer input and a radial BAO catalogue:
+
+```bash
+python cpg_clock_geometry_closure.py \
   --cc data/cosmic_chronometers_32.csv \
-  --bao path/to/radial_bao.csv \
+  --bao data/desi_dr2_radial_bao.csv \
   --cc-systematics data/moresco_mm20_systematics.csv \
+  --bao-covariance data/desi_dr2_radial_bao_cov.csv \
   --draws 8000
 ```
 
-Optional absolute sound-horizon calibration:
+GP-first reconstruction:
 
 ```bash
-python3 cpg_clock_geometry_closure.py \
+python cpg_clock_geometry_gp.py \
   --cc data/cosmic_chronometers_32.csv \
-  --bao path/to/radial_bao.csv \
-  --rd 147.09 \
-  --rd-sigma 0.26
+  --bao data/desi_dr2_radial_bao.csv \
+  --cc-systematics data/moresco_mm20_systematics.csv \
+  --bao-covariance data/desi_dr2_radial_bao_cov.csv \
+  --method gp \
+  --draws 8000
 ```
 
-Radial BAO CSV files require:
-
-```text
-z,DH_over_rd,sigma_DH_over_rd
-```
-
-with an optional `reference` column. A full numeric BAO covariance matrix can
-be supplied separately with `--bao-covariance`.
-
-## Requirements
-
-- Python 3.10+
-- NumPy
-- SciPy
-
-Install dependencies with:
+High-redshift transient example:
 
 ```bash
-python3 -m pip install -r requirements.txt
-```
-
-## Run the self-test
-
-```bash
-python3 cpg_v0_3.py --self-test
-```
-
-Or run the automated test script:
-
-```bash
-python3 test_cpg_v0_3.py
-```
-
-The clock-geometry diagnostic has its own regression tests:
-
-```bash
-python3 test_cpg_clock_geometry_closure.py
-```
-
-## Catalogue format
-
-Required CSV columns:
-
-```text
-event_id,z,t_obs,t_rest,sigma_t_obs
-```
-
-Optional columns:
-
-```text
-sigma_t_rest,environment,quality
-```
-
-The timescale unit is arbitrary provided observed/rest-frame times and their uncertainties use the same unit.
-
-## Example analysis
-
-```bash
-python3 cpg_v0_3.py \
-  --catalog transient_template.csv \
+python cpg_v0_3.py \
+  --catalog examples/transient_template.csv \
   --z-threshold 2.5 \
   --z-bins 0,1,2,2.5,3,4,6 \
   --systematic-fraction 0.02
 ```
 
-To fix the calibration intercept to zero:
+## Development policy
 
-```bash
-python3 cpg_v0_3.py --catalog transient_template.csv --fix-intercept
-```
-
-## Scientific interpretation
-
-CPG is an observational and numerical diagnostic framework. A nonzero `R_SN`, chronometer residual, clock-geometry residual, or other closure statistic is **not automatically evidence for RTD-EU**. A physical interpretation requires a self-consistent spacetime model, worldlines/congruences, invariant boundary conditions, a light-cone/redshift mapping, and control of observational systematics.
-
-The long-term RTD-EU/CPG program is to connect
-
-```text
-matter dynamics -> g_mn, u^m -> chronometric mapping -> Delta tau -> observables
-```
-
-and test that chain against independent cosmological probes.
+Validated changes should include regression tests and, when applicable, a reproducible public-data benchmark. Experimental work should remain isolated until its assumptions and numerical convergence are sufficiently tested. See [`CONTRIBUTING.md`](CONTRIBUTING.md).
 
 ## Citation
 
-The archived v0.3.1 release is permanently available from Zenodo:
+For the archived software release, cite:
 
 **Barnes, Jeffery. (2026). _Cosmological Proper-Time Geodesy (CPG) (v0.3.1)._ Zenodo. https://doi.org/10.5281/zenodo.22863852**
 
-Machine-readable citation metadata are provided in [`CITATION.cff`](CITATION.cff).
+Machine-readable metadata are provided in [`CITATION.cff`](CITATION.cff). Development commits after v0.3.1 should be identified by commit or by a future archived release rather than attributed retroactively to the v0.3.1 DOI.
 
 ## License
 
