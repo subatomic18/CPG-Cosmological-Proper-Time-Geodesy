@@ -1,0 +1,148 @@
+name: Scientific benchmarks
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '*.py'
+      - 'tests/**'
+      - 'data/**'
+      - 'requirements*.txt'
+      - '.github/workflows/benchmarks.yml'
+  pull_request:
+    paths:
+      - '*.py'
+      - 'tests/**'
+      - 'data/**'
+      - 'requirements*.txt'
+      - '.github/workflows/benchmarks.yml'
+
+jobs:
+  gp-clock-geometry:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: python -m pip install --upgrade pip && python -m pip install -r requirements-dev.txt
+      - name: Test clock-geometry reconstruction
+        run: python -m pytest -q tests/test_cpg_clock_geometry_closure.py tests/test_cpg_gp.py tests/test_cpg_clock_geometry_gp.py
+      - name: Run public-data GP closure
+        run: |
+          python cpg_clock_geometry_gp.py \
+            --cc data/cosmic_chronometers_32.csv \
+            --bao data/desi_dr2_radial_bao.csv \
+            --cc-systematics data/moresco_mm20_systematics.csv \
+            --bao-covariance data/desi_dr2_radial_bao_cov.csv \
+            --method gp \
+            --draws 4000 > gp_clock_geometry.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gp-clock-geometry
+          path: gp_clock_geometry.json
+
+  planck-cmb:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: python -m pip install --upgrade pip && python -m pip install -r requirements-dev.txt camb
+      - name: Test CMB closure
+        run: python -m pytest -q tests/test_cpg_cmb_closure.py
+      - name: Reproduce compressed Planck acoustic scale
+        run: |
+          python cpg_cmb_closure.py data/planck2018_cmb_compressed.json | tee planck_cmb_closure.txt
+          python cpg_cmb_closure.py data/planck2018_cmb_compressed.json --json > planck_cmb_closure.json
+      - name: Enforce central-value reproduction
+        run: |
+          python - <<'PY'
+          import json
+          with open('planck_cmb_closure.json', 'r', encoding='utf-8') as f:
+              result = json.load(f)
+          check = result['published_central_value_check']
+          print(json.dumps(check, indent=2))
+          if not check['within_tolerance']:
+              raise SystemExit('CPG did not reproduce the compressed Planck H0 central value within tolerance')
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: planck-compressed-cmb-closure
+          path: |
+            planck_cmb_closure.txt
+            planck_cmb_closure.json
+
+  shoes-distance-ladder:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: python -m pip install --upgrade pip && python -m pip install -r requirements-dev.txt
+      - name: Test distance ladder
+        run: python -m pytest -q tests/test_cpg_distance_ladder.py
+      - name: Download public SH0ES-2022 matrix data
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p data/shoes2022
+          base='https://raw.githubusercontent.com/marcushogas/Cepheid-Distance-Ladder-Data/main/SH0ES2022'
+          curl --fail --location --retry 3 "$base/y_R22.txt" -o data/shoes2022/y_R22.txt
+          curl --fail --location --retry 3 "$base/L_R22.txt" -o data/shoes2022/L_R22.txt
+          curl --fail --location --retry 3 "$base/q_R22.txt" -o data/shoes2022/q_R22.txt
+          curl --fail --location --retry 3 "$base/C_R22.txt" -o data/shoes2022/C_R22.txt
+      - name: Reproduce SH0ES baseline
+        run: |
+          python cpg_distance_ladder.py data/shoes2022 --show-parameters | tee shoes_reproduction.txt
+          python cpg_distance_ladder.py data/shoes2022 --json > shoes_reproduction.json
+      - name: Enforce published baseline reproduction
+        run: |
+          python - <<'PY'
+          import json
+          with open('shoes_reproduction.json', 'r', encoding='utf-8') as f:
+              result = json.load(f)
+          check = result['published_baseline_check']
+          print(json.dumps(check, indent=2))
+          if not check['within_tolerance']:
+              raise SystemExit('CPG did not reproduce the published SH0ES baseline within tolerance')
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: shoes-distance-ladder-reproduction
+          path: |
+            shoes_reproduction.txt
+            shoes_reproduction.json
+
+  redshift-mapping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: python -m pip install --upgrade pip && python -m pip install -r requirements-dev.txt
+      - name: Test mapping tools
+        run: python -m pytest -q tests/test_cpg_redshift_mapping.py tests/test_cpg_late_onset_mapping.py tests/test_cpg_compensated_mapping.py
+      - name: Run mapping closure scans
+        run: |
+          python cpg_redshift_mapping.py --h0-late 73.04342157543183 --h0-early 67.26899612716719 --z-star 1089.938 --json > redshift_mapping_stress.json
+          python cpg_compensated_mapping.py --h0-late 73.04342157543183 --h0-early 67.26899612716719 --max-hubble-error 0.01 --z-star 1089.938 --json > compensated_mapping.json
+          python cpg_late_onset_mapping.py --h0-late 73.04342157543183 --h0-early 67.26899612716719 --max-hubble-error 0.01 --z-star 1089.938 --json > late_onset_mapping.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: redshift-mapping-closure
+          path: |
+            redshift_mapping_stress.json
+            compensated_mapping.json
+            late_onset_mapping.json
