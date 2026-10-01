@@ -8,7 +8,7 @@ from cpg_chronometers import (
     ChronometerClosureAuditor,
 )
 
-root = Path(__file__).resolve().parent
+root = Path(__file__).resolve().parent.parent
 points = load_cc_csv(root / "data" / "cosmic_chronometers_32.csv")
 sys = load_systematics_csv(root / "data" / "moresco_mm20_systematics.csv")
 C = build_covariance(points, sys)
