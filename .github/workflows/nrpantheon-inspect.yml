@@ -1,0 +1,53 @@
+name: Inspect public NRPantheon catalogs
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - lightcone-null-geodesics
+    paths:
+      - '.github/workflows/nrpantheon-inspect.yml'
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out CPG
+        uses: actions/checkout@v4
+
+      - name: Download fiducial NRPantheon archive
+        run: |
+          set -euo pipefail
+          curl --fail --location --retry 3 \
+            https://raw.githubusercontent.com/hayleyjm/NRPantheon/main/N256_L1024/NRPantheon_nobs25_nrot5_N256_L1024.tar.gz \
+            -o /tmp/nrpantheon.tar.gz
+          ls -lh /tmp/nrpantheon.tar.gz
+          mkdir -p /tmp/nrpantheon
+          tar -xzf /tmp/nrpantheon.tar.gz -C /tmp/nrpantheon
+
+      - name: Inspect archive structure and sample headers
+        run: |
+          set -euo pipefail
+          echo '--- FILE LIST (first 80) ---'
+          find /tmp/nrpantheon -type f | sort | head -80
+          echo '--- FILE COUNT ---'
+          find /tmp/nrpantheon -type f | wc -l
+          echo '--- SAMPLE TEXT HEADERS ---'
+          python - <<'PY'
+          from pathlib import Path
+          root = Path('/tmp/nrpantheon')
+          files = sorted(p for p in root.rglob('*') if p.is_file())
+          shown = 0
+          for p in files:
+              try:
+                  txt = p.read_text(encoding='utf-8', errors='strict')
+              except Exception:
+                  continue
+              print(f'### {p.relative_to(root)} size={p.stat().st_size}')
+              print('\n'.join(txt.splitlines()[:6]))
+              print()
+              shown += 1
+              if shown >= 8:
+                  break
+          PY
